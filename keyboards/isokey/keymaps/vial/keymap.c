@@ -28,7 +28,8 @@
 enum layer_names {
     _BASE,
     _FN,
-    _NUM
+    _NUM,
+    _DB
 };
 
 
@@ -137,6 +138,16 @@ _______, _______ , _______ , _______ , _______ , _______ , _______ , KC_P4   , K
 _______, _______ , _______ , _______ , _______ , _______ , _______ , KC_P1   , KC_P2    , KC_P3   , KC_PMNS , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , _______ , \
 _______, _______ , _______ , _______ , _______ , _______ , KC_P0   , KC_COMMA, KC_PDOT  , KC_PPLS , _______ , _______ , _______ , _______ , _______ , _______  , _______ \
 ),
+
+// Debug
+[_DB] = LAYOUT_full_105_iso (
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , \
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , \
+ KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 \
+)
 
 };
 
