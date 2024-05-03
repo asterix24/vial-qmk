@@ -1,12 +1,14 @@
 # isokey
 
-![isokey](imgur.com image replace me!)
+![isokey](https://blog.asterix.cloud/images/isokey10.png)
 
-*A short description of the keyboard/project*
+The Isokey is a keyboard with straight keys!
+What are “straight” keys?
+Straight keys mean a keyboard where the keys are aligned and not offset like common commercial keyboards.
 
 * Keyboard Maintainer: [Daniele Basile <asterix24@gmail.com>](https://github.com/asterix24)
-* Hardware Supported: *The PCBs, controllers supported*
-* Hardware Availability: *Links to where you can find this hardware*
+* Hardware Supported: *Custom PCB*, baed on [WeAct Black Pill V1.2](https://stm32-base.org/boards/STM32F401CCU6-WeAct-Black-Pill-V1.2.html) with STM32F401CCU6.
+* Hardware Availability: https://blog.asterix.cloud/en/isokey/
 
 Make example for this keyboard (after setting up your build environment):
 
@@ -20,8 +22,5 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 
 ## Bootloader
 
-Enter the bootloader in 3 ways:
+The keyboard is based on [WeAct Black Pill V1.2](https://stm32-base.org/boards/STM32F401CCU6-WeAct-Black-Pill-V1.2.html) with STM32F401CCU6, and to flash use stm32-dfu.
 
-* **Bootmagic reset**: Hold down the key at (0,0) in the matrix (usually the top left key or Escape) and plug in the keyboard
-* **Physical reset button**: Briefly press the button on the back of the PCB - some may have pads you must short instead
-* **Keycode in layout**: Press the key mapped to `QK_BOOT` if it is available
