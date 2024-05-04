@@ -16,6 +16,7 @@
 
 VPATH += keyboards/isokey/common
 SRC += i2c_master.c \
+	   isokey.c \
 	   led.c \
 	   lp5569.c \
 	   leds_efx.c \

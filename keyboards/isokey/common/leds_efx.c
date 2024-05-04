@@ -55,7 +55,6 @@ static const struct {
 };
 
 void leds_efx_setLed(isokey_led_t led, uint8_t status) {
-    uprintf("set led[%u] %d\n", led, status);
     uint8_t lev = status ? default_level : 0;
     if (led_map[led].pwm0 != 0) lp5569_setLed(led_map[led].addr, led_map[led].pwm0, lev);
     if (led_map[led].pwm1 != 0) lp5569_setLed(led_map[led].addr, led_map[led].pwm1, lev);
