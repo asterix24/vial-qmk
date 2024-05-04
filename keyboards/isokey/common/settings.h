@@ -23,31 +23,20 @@
 #include <lp5569.h>
 #include "keycode.h"
 
+#define M1_SW  KC_PMNS
+#define M2_SW  KC_PPLS
+#define M3_SW  KC_TRNS
+#define M4_SW  KC_TRNS
+#define M5_SW  KC_TRNS
+#define M6_SW  KC_DEL
+#define M7_SW  KC_TRNS
+#define M8_SW  KC_TRNS
+#define FN_SW  KC_TRNS
+
 enum isokey_keycodes {
   QMKBEST = SAFE_RANGE,
-  M1_SW,  // Special function
-  M2_SW,  // Special function
-  M3_SW,  // Special function
-  M4_SW,  // Special function
-  M5_SW,  // Special function
-  M6_SW,  // Special function
-  M7_SW,  // Special function
-  M8_SW,  // Special function
-  FN_SW,  // Special function
   LED_EFX,// Start/strop led efx
   LOGO,   // https://isokey.asterix.cloud  > this should be always the last! <
 };
-
-
-typedef struct {
-    uint8_t len;
-    uint16_t delay;
-    uint8_t codes[5];
-} isokey_key_t;
-
-
-extern const isokey_key_t isokey_key_table[];
-
-void settings_init(void);
 
 #endif /* ISOKEY_SETTINGS_H */

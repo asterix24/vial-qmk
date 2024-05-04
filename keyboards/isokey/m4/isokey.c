@@ -25,5 +25,4 @@ void keyboard_post_init_user(void) {
     //debug_keyboard=true;
 
     leds_efx_init();
-    settings_init();
 }
