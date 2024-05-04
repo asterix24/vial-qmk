@@ -29,27 +29,10 @@ enum layer_names {
     _BASE,
     _FN,
     _NUM,
-    _DB
 };
 
 
 /*
-┌───┐   ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┬───┐ ┌───┬───┬───┐
-│Esc│   │F1 │F2 │F3 │F4 │ │F5 │F6 │F7 │F8 │ │F9 │F10│F11│F12│ │PSc│Scr│Pse│
-└───┘   └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┴───┘ └───┴───┴───┘
-┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───────┐ ┌───┬───┬───┐ ┌───┬───┬───┬───┐
-│ ` │ 1 │ 2 │ 3 │ 4 │ 5 │ 6 │ 7 │ 8 │ 9 │ 0 │ - │ = │ Backsp│ │Ins│Hom│PgU│ │Num│ / │ * │ - │
-├───┴┬──┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─────┤ ├───┼───┼───┤ ├───┼───┼───┼───┤
-│ Tab│  Q │ W │ E │ R │ T │ Y │ U │ I │ O │ P │ [ │ ] │     │ │Del│End│PgD│ │ 7 │ 8 │ 9 │   │
-├────┴┬───┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┬──┴┐ Ent│ └───┴───┴───┘ ├───┼───┼───┤ + │
-│Ctrl │  A │ S │ D │ F │ G │ H │ J │ K │ L │ ; │ ' │ # │    │               │ 4 │ 5 │ 6 │   │
-├────┬┴──┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴─┬─┴───┴────┤     ┌───┐     ├───┼───┼───┼───┤
-│Shft│ \ │ Z │ X │ C │ V │ B │ N │ M │ , │ . │ / │    Shift │     │ ↑ │     │ 1 │ 2 │ 3 │   │
-├────┼───┴┬──┴─┬─┴───┴───┴───┴───┴───┴──┬┴───┼───┴┬────┬────┤ ┌───┼───┼───┐ ├───┴───┼───┤Ent│
-│Ctrl│GUI │Alt │                        │ Alt│ GUI│Menu│Ctrl│ │ ← │ ↓ │ → │ │   0   │ . │   │
-└────┴────┴────┴────────────────────────┴────┴────┴────┴────┘ └───┴───┴───┘ └───────┴───┴───┘
-
-
 
    105  LAYOUT
 Because we do not have enough pins on the blackpill module, we recycle the empty key position in layout, so the extra keys are placed at the left of the board,
@@ -140,19 +123,9 @@ _______, _______ , _______ , _______ , _______ , _______ , _______ , KC_P1   , K
 _______, _______ , _______ , _______ , _______ , _______ , KC_P0   , KC_COMMA, KC_PDOT  , KC_PPLS , _______ , _______ , _______ , _______ , _______ , _______  , _______ \
 ),
 
-// Debug
-[_DB] = LAYOUT_full_105_iso (
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , \
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , KC_1 , \
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7   , KC_8 , KC_9 , KC_0 , \
- KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 , KC_8 , KC_9 , KC_0 , KC_1 , KC_2 , KC_3 , KC_4 , KC_5 , KC_6 , KC_7 \
-)
-
 };
 
-static uint8_t efx_status;
+static uint8_t efx_status = 1;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   // Keycode is special function, peek the string to send from
@@ -171,15 +144,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       SEND_STRING("https://blog.asterix.cloud");
     }
     return true;
-  }
-
-  int16_t key = keycode - M1_SW;
-  if (key >= 0 && key <= (LOGO - M1_SW)) {
-    if (record->event.pressed) {
-      for (uint8_t i = 0;  i < isokey_key_table[key].len; i++) {
-        tap_code_delay(isokey_key_table[key].codes[i], isokey_key_table[key].delay);
-      }
-    }
   }
 
   return true;
