@@ -1,6 +1,6 @@
 {
     "manufacturer": "Daniele Basile",
-    "keyboard_name": "isokey_split",
+    "keyboard_name": "isokeyV5",
     "maintainer": "Daniele Basile",
     "bootloader": "rp2040",
     "diode_direction": "ROW2COL",
@@ -22,7 +22,7 @@
     "split": {
         "enabled": true,
         "bootmagic": {
-            "matrix": [5, 7]
+            "matrix": [5, 0]
         },
         "matrix_pins": {
             "right": {
@@ -31,7 +31,7 @@
             }
         },
         "soft_serial_pin": "GP15",
-    },
+    }
     "processor": "RP2040",
     "url": "http://blog.asterix.cloud",
     "usb": {
