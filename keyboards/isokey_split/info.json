@@ -1,6 +1,6 @@
 {
-    "manufacturer": "Daniele Basile",
-    "keyboard_name": "isokeyV5",
+    "manufacturer": "Daniele Basile <asterix24@gmail.com>",
+    "keyboard_name": "IsoKey Split v.5",
     "maintainer": "Daniele Basile",
     "bootloader": "rp2040",
     "diode_direction": "ROW2COL",
