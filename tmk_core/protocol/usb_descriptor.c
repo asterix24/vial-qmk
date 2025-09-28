@@ -45,24 +45,6 @@
 #    include "joystick.h"
 #endif
 
-#ifndef SERIAL_NUMBER
-#ifdef VIAL_ENABLE
-#    define SERIAL_NUMBER vial:f64c2b3c
-#else
-#    define SERIAL_NUMBER 0
-#endif
-#endif
-
-#if defined(SERIAL_NUMBER) || (defined(SERIAL_NUMBER_USE_HARDWARE_ID) && SERIAL_NUMBER_USE_HARDWARE_ID == TRUE)
-
-#    define HAS_SERIAL_NUMBER
-
-#    if defined(SERIAL_NUMBER_USE_HARDWARE_ID) && SERIAL_NUMBER_USE_HARDWARE_ID == TRUE
-#        include "hardware_id.h"
-#    endif
-
-#endif // defined(SERIAL_NUMBER) || (defined(SERIAL_NUMBER_USE_HARDWARE_ID) && SERIAL_NUMBER_USE_HARDWARE_ID == TRUE)
-
 // clang-format off
 
 /*
@@ -401,6 +383,14 @@ const USB_Descriptor_HIDReport_Datatype_t PROGMEM JoystickReport[] = {
         HID_RI_END_COLLECTION(0),
     HID_RI_END_COLLECTION(0)
 };
+#endif
+
+#ifndef SERIAL_NUMBER
+#ifdef VIAL_ENABLE
+#    define SERIAL_NUMBER vial:f64c2b3c
+#else
+#    define SERIAL_NUMBER 0
+#endif
 #endif
 
 /*
