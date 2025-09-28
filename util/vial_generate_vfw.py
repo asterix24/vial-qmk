@@ -18,8 +18,6 @@ def main():
                 uid = re.findall(r"#define.*VIAL_KEYBOARD_UID.*{(.*)}", line)
                 if uid:
                     break
-        if uid:
-            break
     if not uid:
         print("Cannot identify keyboard UID from configuration files {}, ensure that you have VIAL_KEYBOARD_UID defined!".format(configs))
         return 1
@@ -33,7 +31,7 @@ def main():
         firmware = inf.read()
 
     with open(out, "wb") as outf:
-        outf.write(b"VIALFW01")
+        outf.write(b"VIALFW00")
         outf.write(uid)
         outf.write(struct.pack("<Q", int(time.time())))
         outf.write(b"\x00" * 8)
