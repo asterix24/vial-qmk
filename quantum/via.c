@@ -89,7 +89,11 @@ bool via_eeprom_is_valid(void) {
     uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
     uint8_t magic2 = (BUILD_ID >> 16) & 0xFF;
 #else
+<<<<<<< HEAD
     char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
+=======
+    char *  p      = QMK_BUILDDATE;  // e.g. "2019-11-05-11:29:54"
+>>>>>>> 21bd0cdda0 (vial: use more entropy for determining whether to reset eeprom)
     uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
     uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
     uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
@@ -106,7 +110,11 @@ void via_eeprom_set_valid(bool valid) {
     uint8_t magic1 = (BUILD_ID >> 8) & 0xFF;
     uint8_t magic2 = (BUILD_ID >> 16) & 0xFF;
 #else
+<<<<<<< HEAD
     char *  p      = QMK_BUILDDATE; // e.g. "2019-11-05-11:29:54"
+=======
+    char *  p      = QMK_BUILDDATE;  // e.g. "2019-11-05-11:29:54"
+>>>>>>> 21bd0cdda0 (vial: use more entropy for determining whether to reset eeprom)
     uint8_t magic0 = ((p[2] & 0x0F) << 4) | (p[3] & 0x0F);
     uint8_t magic1 = ((p[5] & 0x0F) << 4) | (p[6] & 0x0F);
     uint8_t magic2 = ((p[8] & 0x0F) << 4) | (p[9] & 0x0F);
