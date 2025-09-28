@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID      0x0000
 #define DEVICE_VER      0x0001
 #define MANUFACTURER    Vial
-#define PRODUCT         STM32F103-vibl example
+#define PRODUCT         STM32F072 example
 
 /* key matrix size */
 #define MATRIX_ROWS 2
@@ -45,7 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *  These options are also useful to firmware size reduction.
  */
 
-#define VIAL_KEYBOARD_UID {0x07, 0x30, 0x3E, 0x60, 0x00, 0x62, 0xA3, 0xD4}
+#define VIAL_KEYBOARD_UID {0xA5, 0x46, 0x30, 0xF2, 0x20, 0xA3, 0xCE, 0x38}
 #define VIAL_UNLOCK_COMBO_ROWS { 0, 1 }
 #define VIAL_UNLOCK_COMBO_COLS { 0, 1 }
 
