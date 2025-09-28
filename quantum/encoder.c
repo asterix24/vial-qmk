@@ -17,6 +17,11 @@ __attribute__((weak)) bool should_process_encoder(void) {
 static encoder_events_t encoder_events;
 static bool             signal_queue_drain = false;
 
+#ifdef VIAL_ENCODERS_ENABLE
+#include "vial.h"
+#define encoder_update_kb vial_encoder_update
+#endif
+
 void encoder_init(void) {
     memset(&encoder_events, 0, sizeof(encoder_events));
     encoder_driver_init();

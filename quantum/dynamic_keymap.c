@@ -15,172 +15,134 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+#include "keymap.h"  // to get keymaps[][][]
+#include "tmk_core/common/eeprom.h"
+#include "progmem.h"  // to read default from flash
+#include "quantum.h"  // for send_string()
 #include "dynamic_keymap.h"
-#include "keymap_introspection.h"
-#include "action.h"
-#include "send_string.h"
-#include "keycodes.h"
-#include "action_tapping.h"
-#include "wait.h"
-#include <string.h>
+#include "via.h"  // for default VIA_EEPROM_ADDR_END
 
-#include "qmk_settings.h"
-#include "nvm_dynamic_keymap.h"
+#ifndef DYNAMIC_KEYMAP_MACRO_COUNT
+#    define DYNAMIC_KEYMAP_MACRO_COUNT 16
+#endif
 
-#ifdef ENCODER_ENABLE
-#    include "encoder.h"
+// This is the default EEPROM max address to use for dynamic keymaps.
+// The default is the ATmega32u4 EEPROM max address.
+// Explicitly override it if the keyboard uses a microcontroller with
+// more EEPROM *and* it makes sense to increase it.
+#ifndef DYNAMIC_KEYMAP_EEPROM_MAX_ADDR
+#    if defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB647__) || defined(__AVR_AT90USB1286__) || defined(__AVR_AT90USB1287__)
+#        define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 2047
+#    else
+#        define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1023
+#    endif
+#endif
+
+// Due to usage of uint16_t check for max 65535
+#if DYNAMIC_KEYMAP_EEPROM_MAX_ADDR > 65535
+#    error DYNAMIC_KEYMAP_EEPROM_MAX_ADDR must be less than 65536
+#endif
+
+// If DYNAMIC_KEYMAP_EEPROM_ADDR not explicitly defined in config.h,
+// default it start after VIA_EEPROM_CUSTOM_ADDR+VIA_EEPROM_CUSTOM_SIZE
+#ifndef DYNAMIC_KEYMAP_EEPROM_ADDR
+#    ifdef VIA_EEPROM_CUSTOM_CONFIG_ADDR
+#        define DYNAMIC_KEYMAP_EEPROM_ADDR (VIA_EEPROM_CUSTOM_CONFIG_ADDR + VIA_EEPROM_CUSTOM_CONFIG_SIZE)
+#    else
+#        error DYNAMIC_KEYMAP_EEPROM_ADDR not defined
+#    endif
+#endif
+
+// Encoders are located right after the dynamic keymap
+#define VIAL_ENCODERS_EEPROM_ADDR (DYNAMIC_KEYMAP_EEPROM_ADDR + (DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2))
+
+#ifdef VIAL_ENCODERS_ENABLE
+#define NUMBER_OF_ENCODERS (sizeof(encoders_pad_a) / sizeof(pin_t))
+static pin_t encoders_pad_a[] = ENCODERS_PAD_A;
+#define VIAL_ENCODERS_SIZE (NUMBER_OF_ENCODERS * DYNAMIC_KEYMAP_LAYER_COUNT * 2 * 2)
 #else
-#    define NUM_ENCODERS 0
+#define VIAL_ENCODERS_SIZE 0
 #endif
 
-#ifdef VIAL_ENABLE
-#include "vial.h"
+// Dynamic macro starts after encoders, or dynamic keymaps if encoders aren't enabled
+#ifndef DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR
+#    define DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR (VIAL_ENCODERS_EEPROM_ADDR + VIAL_ENCODERS_SIZE)
 #endif
 
-#ifndef DYNAMIC_KEYMAP_MACRO_DELAY
-#    define DYNAMIC_KEYMAP_MACRO_DELAY TAP_CODE_DELAY
+// Sanity check that dynamic keymaps fit in available EEPROM
+// If there's not 100 bytes available for macros, then something is wrong.
+// The keyboard should override DYNAMIC_KEYMAP_LAYER_COUNT to reduce it,
+// or DYNAMIC_KEYMAP_EEPROM_MAX_ADDR to increase it, *only if* the microcontroller has
+// more than the default.
+_Static_assert(DYNAMIC_KEYMAP_EEPROM_MAX_ADDR - DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR >= 100, "Dynamic keymaps are configured to use more EEPROM than is available.");
+
+// Dynamic macros are stored after the keymaps and use what is available
+// up to and including DYNAMIC_KEYMAP_EEPROM_MAX_ADDR.
+#ifndef DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE
+#    define DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE (DYNAMIC_KEYMAP_EEPROM_MAX_ADDR - DYNAMIC_KEYMAP_MACRO_EEPROM_ADDR + 1)
 #endif
 
-uint8_t dynamic_keymap_get_layer_count(void) {
-    return DYNAMIC_KEYMAP_LAYER_COUNT;
-}
+uint8_t dynamic_keymap_get_layer_count(void) { return DYNAMIC_KEYMAP_LAYER_COUNT; }
 
 uint16_t dynamic_keymap_get_keycode(uint8_t layer, uint8_t row, uint8_t column) {
-    return nvm_dynamic_keymap_read_keycode(layer, row, column);
+    void *address = dynamic_keymap_key_to_eeprom_address(layer, row, column);
+    // Big endian, so we can read/write EEPROM directly from host if we want
+    uint16_t keycode = eeprom_read_byte(address) << 8;
+    keycode |= eeprom_read_byte(address + 1);
+    return keycode;
 }
 
 void dynamic_keymap_set_keycode(uint8_t layer, uint8_t row, uint8_t column, uint16_t keycode) {
-    nvm_dynamic_keymap_update_keycode(layer, row, column, keycode);
+    void *address = dynamic_keymap_key_to_eeprom_address(layer, row, column);
+    // Big endian, so we can read/write EEPROM directly from host if we want
+    eeprom_update_byte(address, (uint8_t)(keycode >> 8));
+    eeprom_update_byte(address + 1, (uint8_t)(keycode & 0xFF));
 }
 
-#ifdef ENCODER_MAP_ENABLE
-uint16_t dynamic_keymap_get_encoder(uint8_t layer, uint8_t encoder_id, bool clockwise) {
-    return nvm_dynamic_keymap_read_encoder(layer, encoder_id, clockwise);
+#ifdef VIAL_ENCODERS_ENABLE
+static void *dynamic_keymap_encoder_to_eeprom_address(uint8_t layer, uint8_t idx, uint8_t dir) {
+    return ((void *)VIAL_ENCODERS_EEPROM_ADDR) + (layer * NUMBER_OF_ENCODERS * 2 * 2) + (idx * 2 * 2) + dir * 2;
 }
 
-void dynamic_keymap_set_encoder(uint8_t layer, uint8_t encoder_id, bool clockwise, uint16_t keycode) {
-    nvm_dynamic_keymap_update_encoder(layer, encoder_id, clockwise, keycode);
-}
-#endif // ENCODER_MAP_ENABLE
+uint16_t dynamic_keymap_get_encoder(uint8_t layer, uint8_t idx, uint8_t dir) {
+    if (layer >= DYNAMIC_KEYMAP_LAYER_COUNT || idx >= NUMBER_OF_ENCODERS || dir > 1)
+        return 0;
 
-#ifdef QMK_SETTINGS
-uint8_t dynamic_keymap_get_qmk_settings(uint16_t offset) {
-    return nvm_dynamic_keymap_get_qmk_settings(offset);
-}
-
-void dynamic_keymap_set_qmk_settings(uint16_t offset, uint8_t value) {
-    nvm_dynamic_keymap_set_qmk_settings(offset, value);
-}
-#endif
-
-#ifdef VIAL_TAP_DANCE_ENABLE
-int dynamic_keymap_get_tap_dance(uint8_t index, vial_tap_dance_entry_t *entry) {
-    return nvm_dynamic_keymap_get_tap_dance(index, entry);
+    void *address = dynamic_keymap_encoder_to_eeprom_address(layer, idx, dir);
+    uint16_t keycode = eeprom_read_byte(address) << 8;
+    keycode |= eeprom_read_byte(address + 1);
+    return keycode;
 }
 
-int dynamic_keymap_set_tap_dance(uint8_t index, const vial_tap_dance_entry_t *entry) {
-    return nvm_dynamic_keymap_set_tap_dance(index, entry);
-}
-#endif
+void dynamic_keymap_set_encoder(uint8_t layer, uint8_t idx, uint8_t dir, uint16_t keycode) {
+    if (layer >= DYNAMIC_KEYMAP_LAYER_COUNT || idx >= NUMBER_OF_ENCODERS || dir > 1)
+        return;
 
-#ifdef VIAL_COMBO_ENABLE
-int dynamic_keymap_get_combo(uint8_t index, vial_combo_entry_t *entry) {
-    return nvm_dynamic_keymap_get_combo(index, entry);
-}
-
-int dynamic_keymap_set_combo(uint8_t index, const vial_combo_entry_t *entry) {
-    return nvm_dynamic_keymap_set_combo(index, entry);
-}
-#endif
-
-#ifdef VIAL_KEY_OVERRIDE_ENABLE
-int dynamic_keymap_get_key_override(uint8_t index, vial_key_override_entry_t *entry) {
-    return nvm_dynamic_keymap_get_key_override(index, entry);
-}
-
-int dynamic_keymap_set_key_override(uint8_t index, const vial_key_override_entry_t *entry) {
-    return nvm_dynamic_keymap_set_key_override(index, entry);
-}
-#endif
-
-#ifdef VIAL_ALT_REPEAT_KEY_ENABLE
-int dynamic_keymap_get_alt_repeat_key(uint8_t index, vial_alt_repeat_key_entry_t *entry) {
-    return nvm_dynamic_keymap_get_alt_repeat_key(index, entry);
-}
-
-int dynamic_keymap_set_alt_repeat_key(uint8_t index, const vial_alt_repeat_key_entry_t *entry) {
-    return nvm_dynamic_keymap_set_alt_repeat_key(index, entry);
+    void *address = dynamic_keymap_encoder_to_eeprom_address(layer, idx, dir);
+    eeprom_update_byte(address, (uint8_t)(keycode >> 8));
+    eeprom_update_byte(address + 1, (uint8_t)(keycode & 0xFF));
 }
 #endif
 
 void dynamic_keymap_reset(void) {
-#ifdef VIAL_ENABLE
-    /* temporarily unlock the keyboard so we can set hardcoded QK_BOOT keycode */
-    int vial_unlocked_prev = vial_unlocked;
-    vial_unlocked = 1;
-#endif
-
-    // Erase the keymaps, if necessary.
-    nvm_dynamic_keymap_erase();
-
     // Reset the keymaps in EEPROM to what is in flash.
+    // All keyboards using dynamic keymaps should define a layout
+    // for the same number of layers as DYNAMIC_KEYMAP_LAYER_COUNT.
     for (int layer = 0; layer < DYNAMIC_KEYMAP_LAYER_COUNT; layer++) {
         for (int row = 0; row < MATRIX_ROWS; row++) {
             for (int column = 0; column < MATRIX_COLS; column++) {
-                dynamic_keymap_set_keycode(layer, row, column, keycode_at_keymap_location_raw(layer, row, column));
+                dynamic_keymap_set_keycode(layer, row, column, pgm_read_word(&keymaps[layer][row][column]));
             }
         }
-#ifdef ENCODER_MAP_ENABLE
-        for (int encoder = 0; encoder < NUM_ENCODERS; encoder++) {
-            dynamic_keymap_set_encoder(layer, encoder, true, keycode_at_encodermap_location_raw(layer, encoder, true));
-            dynamic_keymap_set_encoder(layer, encoder, false, keycode_at_encodermap_location_raw(layer, encoder, false));
-        }
-#endif // ENCODER_MAP_ENABLE
-    }
 
-#ifdef QMK_SETTINGS
-    qmk_settings_reset();
-#endif
-
-#ifdef VIAL_TAP_DANCE_ENABLE
-    {
-        vial_tap_dance_entry_t td = { KC_NO, KC_NO, KC_NO, KC_NO, TAPPING_TERM };
-        for (size_t i = 0; i < VIAL_TAP_DANCE_ENTRIES; ++i) {
-            dynamic_keymap_set_tap_dance(i, &td);
-        }
+#ifdef VIAL_ENCODERS_ENABLE
+    for (int idx = 0; idx < NUMBER_OF_ENCODERS; ++idx) {
+        dynamic_keymap_set_encoder(layer, idx, 0, KC_TRNS);
+        dynamic_keymap_set_encoder(layer, idx, 1, KC_TRNS);
     }
 #endif
-
-#ifdef VIAL_COMBO_ENABLE
-    {
-        vial_combo_entry_t combo = { 0 };
-        for (size_t i = 0; i < VIAL_COMBO_ENTRIES; ++i)
-            dynamic_keymap_set_combo(i, &combo);
     }
-#endif
-
-#ifdef VIAL_KEY_OVERRIDE_ENABLE
-    {
-        vial_key_override_entry_t ko = { 0 };
-        ko.layers = ~0;
-        ko.options = vial_ko_option_activation_negative_mod_up | vial_ko_option_activation_required_mod_down | vial_ko_option_activation_trigger_down;
-        for (size_t i = 0; i < VIAL_KEY_OVERRIDE_ENTRIES; ++i)
-            dynamic_keymap_set_key_override(i, &ko);
-    }
-#endif
-
-#ifdef VIAL_ALT_REPEAT_KEY_ENABLE
-    {
-        vial_alt_repeat_key_entry_t arep = { 0 };
-        for (size_t i = 0; i < VIAL_ALT_REPEAT_KEY_ENTRIES; ++i)
-            dynamic_keymap_set_alt_repeat_key(i, &arep);
-    }
-#endif
-
-#ifdef VIAL_ENABLE
-    /* re-lock the keyboard */
-    vial_unlocked = vial_unlocked_prev;
-#endif
 }
 
 void dynamic_keymap_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
@@ -188,32 +150,30 @@ void dynamic_keymap_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
 }
 
 void dynamic_keymap_set_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
-    nvm_dynamic_keymap_update_buffer(offset, size, data);
-}
-
-uint16_t keycode_at_keymap_location(uint8_t layer_num, uint8_t row, uint8_t column) {
-    if (layer_num < DYNAMIC_KEYMAP_LAYER_COUNT && row < MATRIX_ROWS && column < MATRIX_COLS) {
-        return dynamic_keymap_get_keycode(layer_num, row, column);
+    uint16_t dynamic_keymap_eeprom_size = DYNAMIC_KEYMAP_LAYER_COUNT * MATRIX_ROWS * MATRIX_COLS * 2;
+    void *   target                     = (void *)(DYNAMIC_KEYMAP_EEPROM_ADDR + offset);
+    uint8_t *source                     = data;
+    for (uint16_t i = 0; i < size; i++) {
+        if (offset + i < dynamic_keymap_eeprom_size) {
+            eeprom_update_byte(target, *source);
+        }
+        source++;
+        target++;
     }
-    return KC_NO;
 }
 
-#ifdef ENCODER_MAP_ENABLE
-uint16_t keycode_at_encodermap_location(uint8_t layer_num, uint8_t encoder_idx, bool clockwise) {
-    if (layer_num < DYNAMIC_KEYMAP_LAYER_COUNT && encoder_idx < NUM_ENCODERS) {
-        return dynamic_keymap_get_encoder(layer_num, encoder_idx, clockwise);
+// This overrides the one in quantum/keymap_common.c
+uint16_t keymap_key_to_keycode(uint8_t layer, keypos_t key) {
+    if (layer < DYNAMIC_KEYMAP_LAYER_COUNT && key.row < MATRIX_ROWS && key.col < MATRIX_COLS) {
+        return dynamic_keymap_get_keycode(layer, key.row, key.col);
+    } else {
+        return KC_NO;
     }
-    return KC_NO;
-}
-#endif // ENCODER_MAP_ENABLE
-
-uint8_t dynamic_keymap_macro_get_count(void) {
-    return DYNAMIC_KEYMAP_MACRO_COUNT;
 }
 
-uint16_t dynamic_keymap_macro_get_buffer_size(void) {
-    return (uint16_t)nvm_dynamic_keymap_macro_size();
-}
+uint8_t dynamic_keymap_macro_get_count(void) { return DYNAMIC_KEYMAP_MACRO_COUNT; }
+
+uint16_t dynamic_keymap_macro_get_buffer_size(void) { return DYNAMIC_KEYMAP_MACRO_EEPROM_SIZE; }
 
 void dynamic_keymap_macro_get_buffer(uint16_t offset, uint16_t size, uint8_t *data) {
     nvm_dynamic_keymap_macro_read_buffer(offset, size, data);
@@ -233,13 +193,6 @@ void dynamic_keymap_macro_reset(void) {
     // Erase the macros, if necessary.
     nvm_dynamic_keymap_macro_erase();
     nvm_dynamic_keymap_macro_reset();
-}
-
-static uint16_t decode_keycode(uint16_t kc) {
-    /* map 0xFF01 => 0x0100; 0xFF02 => 0x0200, etc */
-    if (kc > 0xFF00)
-        return (kc & 0xFF) << 8;
-    return kc;
 }
 
 void dynamic_keymap_macro_send(uint8_t id) {
@@ -283,51 +236,16 @@ void dynamic_keymap_macro_send(uint8_t id) {
         if (data[0] == 0) {
             break;
         }
-        if (data[0] == SS_QMK_PREFIX) {
-            // If the char is magic, process it as indicated by the next character
-            // (tap, down, up, delay)
-            data[1] = dynamic_keymap_read_byte(offset++);
-            if (data[1] == 0)
+        // If the char is magic (tap, down, up),
+        // add the next char (key to use) and send a 3 char string.
+        if (data[0] == SS_TAP_CODE || data[0] == SS_DOWN_CODE || data[0] == SS_UP_CODE) {
+            data[1] = data[0];
+            data[0] = SS_QMK_PREFIX;
+            data[2] = eeprom_read_byte(p++);
+            if (data[2] == 0) {
                 break;
-            if (data[1] == SS_TAP_CODE || data[1] == SS_DOWN_CODE || data[1] == SS_UP_CODE) {
-                // For tap, down, up, just stuff it into the array and send_string it
-                data[2] = dynamic_keymap_read_byte(offset++);
-                if (data[2] != 0)
-                    send_string(data);
-            } else if (data[1] == VIAL_MACRO_EXT_TAP || data[1] == VIAL_MACRO_EXT_DOWN || data[1] == VIAL_MACRO_EXT_UP) {
-                data[2] = dynamic_keymap_read_byte(offset++);
-                if (data[2] != 0) {
-                    data[3] = dynamic_keymap_read_byte(offset++);
-                    if (data[3] != 0) {
-                        uint16_t kc;
-                        memcpy(&kc, &data[2], sizeof(kc));
-                        kc = decode_keycode(kc);
-                        switch (data[1]) {
-                        case VIAL_MACRO_EXT_TAP:
-                            vial_keycode_tap(kc);
-                            break;
-                        case VIAL_MACRO_EXT_DOWN:
-                            vial_keycode_down(kc);
-                            break;
-                        case VIAL_MACRO_EXT_UP:
-                            vial_keycode_up(kc);
-                            break;
-                        }
-                    }
-                }
-            } else if (data[1] == SS_DELAY_CODE) {
-                // For delay, decode the delay and wait_ms for that amount
-                uint8_t d0 = dynamic_keymap_read_byte(offset++);
-                uint8_t d1 = dynamic_keymap_read_byte(offset++);
-                if (d0 == 0 || d1 == 0)
-                    break;
-                // we cannot use 0 for these, need to subtract 1 and use 255 instead of 256 for delay calculation
-                int ms = (d0 - 1) + (d1 - 1) * 255;
-                while (ms--) wait_ms(1);
             }
-        } else {
-            // If the char wasn't magic, just send it
-            send_string_with_delay(data, DYNAMIC_KEYMAP_MACRO_DELAY);
         }
+        send_string(data);
     }
 }
