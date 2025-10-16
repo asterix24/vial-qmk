@@ -18,27 +18,24 @@ MOUSEKEY_ENABLE = yes
 
 In your keymap you can use the following keycodes to map key presses to mouse actions:
 
-|Key                      |Aliases  |Description                |
-|-------------------------|---------|---------------------------|
-|`QK_MOUSE_CURSOR_UP`     |`MS_UP`  |Mouse cursor up            |
-|`QK_MOUSE_CURSOR_DOWN`   |`MS_DOWN`|Mouse cursor down          |
-|`QK_MOUSE_CURSOR_LEFT`   |`MS_LEFT`|Mouse cursor left          |
-|`QK_MOUSE_CURSOR_RIGHT`  |`MS_RGHT`|Mouse cursor right         |
-|`QK_MOUSE_BUTTON_1`      |`MS_BTN1`|Mouse button 1             |
-|`QK_MOUSE_BUTTON_2`      |`MS_BTN2`|Mouse button 2             |
-|`QK_MOUSE_BUTTON_3`      |`MS_BTN3`|Mouse button 3             |
-|`QK_MOUSE_BUTTON_4`      |`MS_BTN4`|Mouse button 4             |
-|`QK_MOUSE_BUTTON_5`      |`MS_BTN5`|Mouse button 5             |
-|`QK_MOUSE_BUTTON_6`      |`MS_BTN6`|Mouse button 6             |
-|`QK_MOUSE_BUTTON_7`      |`MS_BTN7`|Mouse button 7             |
-|`QK_MOUSE_BUTTON_8`      |`MS_BTN8`|Mouse button 8             |
-|`QK_MOUSE_WHEEL_UP`      |`MS_WHLU`|Mouse wheel up             |
-|`QK_MOUSE_WHEEL_DOWN`    |`MS_WHLD`|Mouse wheel down           |
-|`QK_MOUSE_WHEEL_LEFT`    |`MS_WHLL`|Mouse wheel left           |
-|`QK_MOUSE_WHEEL_RIGHT`   |`MS_WHLR`|Mouse wheel right          |
-|`QK_MOUSE_ACCELERATION_0`|`MS_ACL0`|Set mouse acceleration to 0|
-|`QK_MOUSE_ACCELERATION_1`|`MS_ACL1`|Set mouse acceleration to 1|
-|`QK_MOUSE_ACCELERATION_2`|`MS_ACL2`|Set mouse acceleration to 2|
+|Key             |Aliases  |Description      |
+|----------------|---------|-----------------|
+|`KC_MS_UP`      |`KC_MS_U`|Move cursor up   |
+|`KC_MS_DOWN`    |`KC_MS_D`|Move cursor down |
+|`KC_MS_LEFT`    |`KC_MS_L`|Move cursor left |
+|`KC_MS_RIGHT`   |`KC_MS_R`|Move cursor right|
+|`KC_MS_BTN1`    |`KC_BTN1`|Press button 1   |
+|`KC_MS_BTN2`    |`KC_BTN2`|Press button 2   |
+|`KC_MS_BTN3`    |`KC_BTN3`|Press button 3   |
+|`KC_MS_BTN4`    |`KC_BTN4`|Press button 4   |
+|`KC_MS_BTN5`    |`KC_BTN5`|Press button 5   |
+|`KC_MS_WH_UP`   |`KC_WH_U`|Move wheel up    |
+|`KC_MS_WH_DOWN` |`KC_WH_D`|Move wheel down  |
+|`KC_MS_WH_LEFT` |`KC_WH_L`|Move wheel left  |
+|`KC_MS_WH_RIGHT`|`KC_WH_R`|Move wheel right |
+|`KC_MS_ACCEL0`  |`KC_ACL0`|Set speed to 0   |
+|`KC_MS_ACCEL1`  |`KC_ACL1`|Set speed to 1   |
+|`KC_MS_ACCEL2`  |`KC_ACL2`|Set speed to 2   |
 
 ## Configuring mouse keys
 
