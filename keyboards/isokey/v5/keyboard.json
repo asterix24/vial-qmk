@@ -2,8 +2,10 @@
     "manufacturer": "Daniele Basile <asterix24@gmail.com>",
     "keyboard_name": "IsoKey Split v.5",
     "maintainer": "asterix24",
-    "bootloader": "rp2040",
+    "url": "http://blog.asterix.cloud",
     "diode_direction": "ROW2COL",
+    "processor": "RP2040",
+    "bootloader": "rp2040",
     "features": {
         "bootmagic": true,
         "command": false,
@@ -30,10 +32,8 @@
                 "rows": ["GP28", "GP27", "GP26", "GP22", "GP20" ]
             }
         },
-        "soft_serial_pin": "GP15",
-    }
-    "processor": "RP2040",
-    "url": "http://blog.asterix.cloud",
+        "soft_serial_pin": "GP15"
+    },
     "usb": {
         "device_version": "1.0.0",
         "pid": "0x494B",
