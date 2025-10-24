@@ -14,7 +14,7 @@
 #
 # Copyright 2024 Daniele Basile <asterix24@gmail.com>
 
-VPATH += keyboards/isokey/common
+VPATH += keyboards/isokey/v3ext/common
 SRC += i2c_master.c \
 	   isokey.c \
 	   led.c \
