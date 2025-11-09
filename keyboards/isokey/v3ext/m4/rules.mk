@@ -14,6 +14,7 @@
 #
 # Copyright 2024 Daniele Basile <asterix24@gmail.com>
 
+I2C_DRIVER_REQUIRED = yes
 VPATH += keyboards/isokey/v3ext/common
 SRC += i2c_master.c \
 	   isokey.c \
