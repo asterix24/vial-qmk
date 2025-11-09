@@ -14,7 +14,10 @@
 #
 # Copyright 2025 Daniele Basile <asterix24@gmail.com>
 
+OLED_ENABLE = yes
+I2C_DRIVER_REQUIRED = yes
 SERIAL_DRIVER = vendor
+
 VPATH += keyboards/isokey/v5_1/
 SRC += isokey.c
 
