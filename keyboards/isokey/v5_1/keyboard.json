@@ -35,7 +35,7 @@
         "soft_serial_pin": "GP28"
     },
     "usb": {
-        "device_version": "1.0.0",
+        "device_version": "5.1.0",
         "pid": "0x494B",
         "vid": "0x0005"
     },

@@ -15,22 +15,15 @@
  * Copyright 2025 Daniele Basile <asterix24@gmail.com>
  *
  */
-// SPDX-License-Identifier: GPL-2.0-or-later
+#include "isokey.h"
 
-#pragma once
+void keyboard_post_init_user(void) {}
 
-/*
- * Feature disable options
- *  These options are also useful to firmware size reduction.
- */
+void i2c_init(void) {
+    gpio_set_pin_input(B6); // Try releasing special pins for a short time
+    gpio_set_pin_input(B7);
+    wait_ms(10); // Wait for the release to happen
 
-/* disable debug print */
-// #define NO_DEBUG
-
-/* disable print */
-// #define NO_PRINT
-
-/* disable action features */
-// #define NO_ACTION_LAYER
-// #define NO_ACTION_TAPPING
-// #define NO_ACTION_ONESHOT
+    palSetPadMode(GPIOB, 6, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP); // Set B6 to I2C function
+    palSetPadMode(GPIOB, 7, PAL_MODE_ALTERNATE(4) | PAL_STM32_OTYPE_OPENDRAIN | PAL_STM32_PUPDR_PULLUP); // Set B7 to I2C function
+}
